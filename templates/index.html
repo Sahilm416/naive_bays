@@ -1,0 +1,182 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Hello</title>
+</head>
+<body>
+    <input type="text" id="symptoms-input">
+    <div id="symptoms-suggestions"></div>
+</body>
+<script>
+symptoms = ['cough', 'fever', 'headache', 'nausea', 'fatigue', 'vomiting', 'diarrhea', 'chest pain', 'shortness of breath', 'abdominal pain', 'joint pain']
+document.getElementById("symptoms-input").addEventListener('input', autocomplete)
+function autocomplete(event) {
+  var input = event.target.value.toLowerCase();
+  var matches = [];
+  for (var i = 0; i < symptoms.length; i++) {
+    var symptom = symptoms[i].toLowerCase();
+    var distance = levenshtein(input, symptom);
+    if (distance <= 3) { // suggest if distance <= 2
+      matches.push(symptoms[i]);
+    }
+  }
+  var suggestions = document.getElementById("symptoms-suggestions");
+  suggestions.innerHTML = "";
+  for (var i = 0; i < matches.length; i++) {
+    var suggestion = document.createElement("div");
+    suggestion.innerHTML = matches[i];
+    suggestion.onclick = function() {
+      event.target.value = this.innerHTML;
+      suggestions.innerHTML = "";
+    };
+    suggestions.appendChild(suggestion);
+  }
+}
+
+function levenshtein(a, b) {
+  if (a.length == 0) return b.length;
+  if (b.length == 0) return a.length;
+  var matrix = [];
+  for (var i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  for (var j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+  for (var i = 1; i <= b.length; i++) {
+    for (var j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) == a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          Math.min(
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          )
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
+}
+
+</script>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Predict Disease</title>
+</head>
+<body>
+    <h1>Predict Disease</h1>
+    <form method="POST" action="/predict" autocomplete="off" >
+        <label for="symptoms">Symptoms:</label><br>
+        <input type="text" class = "symptom" id="symptom1" name="symptom1"><br>
+        <input type="text" class = "symptom" id="symptom2" name="symptom2"><br>
+        <input type="text" class = "symptom" id="symptom3" name="symptom3"><br>
+        <input type="text" class = "symptom" id="symptom4" name="symptom4"><br>
+        <input type="text" class = "symptom" id="symptom5" name="symptom5"><br>
+        <input type="text" class = "symptom" id="symptom6" name="symptom6"><br>
+        <input type="submit" value="Submit">
+        <div id="symptoms-suggestions"></div>
+    </form>
+    {% if disease %}
+        <p>Predicted disease: {{ disease }}</p>
+        <p>Description: {{description}}</p>
+        <br>
+        <h4>Precution:</h4>
+        <ol>
+          {% for i in precution %}
+          <li>
+            {{i}}
+          </li> 
+          {% endfor %}
+        </ol>
+    {% endif %}
+
+<script>
+  symptoms = ['itching','skin_rash','nodal_skin_eruptions','continuous_sneezing','shivering','chills','joint_pain',
+    'stomach_pain','acidity','ulcers_on_tongue','muscle_wasting','vomiting','burning_micturition','spotting_ urination','fatigue',
+    'weight_gain','anxiety','cold_hands_and_feets','mood_swings','weight_loss','restlessness','lethargy','patches_in_throat',
+    'irregular_sugar_level','cough','high_fever','sunken_eyes','breathlessness','sweating','dehydration','indigestion',
+    'headache','yellowish_skin','dark_urine','nausea','loss_of_appetite','pain_behind_the_eyes','back_pain','constipation',
+    'abdominal_pain','diarrhoea','mild_fever','yellow_urine','yellowing_of_eyes','acute_liver_failure','fluid_overload',
+    'swelling_of_stomach','swelled_lymph_nodes','malaise','blurred_and_distorted_vision','phlegm','throat_irritation',
+    'redness_of_eyes','sinus_pressure','runny_nose','congestion','chest_pain','weakness_in_limbs','fast_heart_rate',
+    'pain_during_bowel_movements','pain_in_anal_region','bloody_stool','irritation_in_anus','neck_pain','dizziness','cramps',
+    'bruising','obesity','swollen_legs','swollen_blood_vessels','puffy_face_and_eyes','enlarged_thyroid','brittle_nails',
+    'swollen_extremeties','excessive_hunger','extra_marital_contacts','drying_and_tingling_lips','slurred_speech','knee_pain','hip_joint_pain',
+    'muscle_weakness','stiff_neck','swelling_joints','movement_stiffness','spinning_movements','loss_of_balance','unsteadiness','weakness_of_one_body_side',
+    'loss_of_smell','bladder_discomfort','foul_smell_of urine','continuous_feel_of_urine','passage_of_gases','internal_itching','toxic_look_(typhos)',
+    'depression','irritability','muscle_pain','altered_sensorium','red_spots_over_body','belly_pain','abnormal_menstruation','dischromic _patches',
+    'watering_from_eyes','increased_appetite','polyuria','family_history','mucoid_sputum','rusty_sputum','lack_of_concentration','visual_disturbances',
+    'receiving_blood_transfusion','receiving_unsterile_injections','coma','stomach_bleeding','distention_of_abdomen','history_of_alcohol_consumption',
+    'fluid_overload','blood_in_sputum','prominent_veins_on_calf','palpitations','painful_walking','pus_filled_pimples','blackheads','scurring','skin_peeling',
+    'silver_like_dusting','small_dents_in_nails','inflammatory_nails','blister','red_sore_around_nose','yellow_crust_ooze']
+
+document.getElementById("symptom1").addEventListener('input', autocomplete)
+document.getElementById("symptom2").addEventListener('input', autocomplete)
+document.getElementById("symptom3").addEventListener('input', autocomplete)
+document.getElementById("symptom4").addEventListener('input', autocomplete)
+document.getElementById("symptom5").addEventListener('input', autocomplete)
+document.getElementById("symptom6").addEventListener('input', autocomplete)
+function autocomplete(event) {
+  var input = event.target.value.toLowerCase();
+  var matches = [];
+  for (var i = 0; i < symptoms.length; i++) {
+    var symptom = symptoms[i].toLowerCase();
+    var distance = levenshtein(input, symptom);
+    if (distance <= 2) { // suggest if distance <= 2
+      matches.push(symptoms[i]);
+    }
+  }
+  var suggestions = document.getElementById("symptoms-suggestions");
+  suggestions.innerHTML = "";
+  for (var i = 0; i < matches.length; i++) {
+    var suggestion = document.createElement("div");
+    suggestion.innerHTML = matches[i];
+    suggestion.onclick = function() {
+      event.target.value = this.innerHTML;
+      suggestions.innerHTML = "";
+    };
+    suggestions.appendChild(suggestion);
+  }
+}
+
+function levenshtein(a, b) {
+  if (a.length == 0) return b.length;
+  if (b.length == 0) return a.length;
+  var matrix = [];
+  for (var i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
+  for (var j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+  for (var i = 1; i <= b.length; i++) {
+    for (var j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) == a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1,
+          Math.min(
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j] + 1
+          )
+        );
+      }
+    }
+  }
+  return matrix[b.length][a.length];
+}
+</script>
+</body>
+</html>
